@@ -1,0 +1,36 @@
+{
+  "$schema": "https://developer.microsoft.com/json-schemas/teams/v1.20/MicrosoftTeams.schema.json",
+  "manifestVersion": "1.20",
+  "version": "1.0.0",
+  "id": "REPLACE_ME-uuid-v4-generate-with-uuidgen",
+  "developer": {
+    "name": "REPLACE_ME — Org name",
+    "websiteUrl": "REPLACE_ME — https://your-org.example",
+    "privacyUrl": "REPLACE_ME — https://your-org.example/privacy",
+    "termsOfUseUrl": "REPLACE_ME — https://your-org.example/terms"
+  },
+  "icons": {
+    "color": "icons/color.png",
+    "outline": "icons/outline.png"
+  },
+  "name": {
+    "short": "REPLACE_ME (≤30)",
+    "full": "REPLACE_ME — Full app name (≤100 chars)"
+  },
+  "description": {
+    "short": "REPLACE_ME — Short description (≤80 chars).",
+    "full": "REPLACE_ME — Full description (≤4000 chars). Explain what the agent does, who it's for, and what queries it handles."
+  },
+  "accentColor": "#0F6CBD",
+  "copilotAgents": {
+    "declarativeAgents": [
+      {
+        "id": "primary",
+        "file": "declarativeAgent.json"
+      }
+    ]
+  },
+  "validDomains": [
+    "REPLACE_ME — your-app.azurestaticapps.net"
+  ]
+}

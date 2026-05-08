@@ -1,0 +1,5 @@
+{
+  "templates": ["az-spa", "az-fullstack"],
+  "minTemplateVersion": "0.1.0",
+  "requiresGraphPermissions": ["Mail.Send"]
+}

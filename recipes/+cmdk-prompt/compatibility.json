@@ -1,0 +1,5 @@
+{
+  "templates": ["az-spa"],
+  "minTemplateVersion": "0.1.0",
+  "dependsOn": []
+}
