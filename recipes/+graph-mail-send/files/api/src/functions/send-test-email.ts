@@ -1,5 +1,5 @@
-import { registerFunction } from "@apvee/azure-functions-openapi";
-import type { HttpRequest, HttpResponseInit } from "@azure/functions";
+import "@apvee/azure-functions-openapi";
+import { app, type HttpRequest, type HttpResponseInit } from "@azure/functions";
 import { render } from "@react-email/render";
 import { z } from "zod";
 
@@ -16,7 +16,7 @@ import { WelcomeEmail } from "../emails/Welcome.js";
  */
 
 const SendTestEmailRequest = z.object({
-  to: z.string().email(),
+  to: z.email(),
 });
 
 const SendTestEmailResponse = z.object({
@@ -52,29 +52,20 @@ async function sendTestEmail(req: HttpRequest): Promise<HttpResponseInit> {
   }
 }
 
-registerFunction("send-test-email", "Send a test email (DEV)", {
+app.openapiPath("send-test-email", "Send a test email (DEV)", {
   handler: sendTestEmail,
   methods: ["POST"],
   authLevel: "anonymous",
-  azureFunctionRoutePrefix: "api",
   route: "send-test-email",
   description:
     "Validates the Mail.Send setup by sending a sample WelcomeEmail to the requested address. Delete this Function after first successful test — production apps should have purpose-built send endpoints.",
   operationId: "sendTestEmail",
   tags: ["Mail", "Dev"],
-  request: {
-    body: {
-      content: { "application/json": { schema: SendTestEmailRequest } },
-      required: true,
-    },
-  },
-  responses: {
-    "200": {
-      description: "Email sent.",
-      content: { "application/json": { schema: SendTestEmailResponse } },
-    },
-    "400": { description: "Invalid request." },
-    "401": { description: "Not signed in." },
-    "500": { description: "Send failed (often a permissions issue)." },
-  },
+  body: SendTestEmailRequest,
+  responses: [
+    { httpCode: 200, schema: SendTestEmailResponse, description: "Email sent." },
+    { httpCode: 400, description: "Invalid request." },
+    { httpCode: 401, description: "Not signed in." },
+    { httpCode: 500, description: "Send failed (often a permissions issue)." },
+  ],
 });

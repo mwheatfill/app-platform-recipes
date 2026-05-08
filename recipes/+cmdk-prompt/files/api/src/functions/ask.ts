@@ -1,10 +1,10 @@
-import { registerFunction } from "@apvee/azure-functions-openapi";
+import "@apvee/azure-functions-openapi";
 import { createAzure } from "@ai-sdk/azure";
-import type { HttpRequest, HttpResponseInit } from "@azure/functions";
+import { app, type HttpRequest, type HttpResponseInit } from "@azure/functions";
 import { generateText, stepCountIs } from "ai";
 import { z } from "zod";
 
-import { requirePrincipal, AuthError } from "../../_shared/auth.js";
+import { AuthError, requirePrincipal } from "../../_shared/auth.js";
 import { badRequest, ok, serverError, unauthorized } from "../../_shared/http.js";
 import { loadInstructions } from "../lib/agent-instructions.js";
 import { buildAgentTools } from "../lib/agent-tools.js";
@@ -87,29 +87,20 @@ async function ask(req: HttpRequest): Promise<HttpResponseInit> {
   }
 }
 
-registerFunction("ask", "Natural-language ask the app's agent", {
+app.openapiPath("ask", "Natural-language ask the app's agent", {
   handler: ask,
   methods: ["POST"],
   authLevel: "anonymous",
-  azureFunctionRoutePrefix: "api",
   route: "ask",
   description:
     "Ask the app's agent in natural language. The agent calls API tools as needed and returns a synthesized answer plus the structured tool calls it made.",
   operationId: "ask",
   tags: ["Agent"],
-  request: {
-    body: {
-      content: { "application/json": { schema: AskRequest } },
-      required: true,
-    },
-  },
-  responses: {
-    "200": {
-      description: "Agent's response.",
-      content: { "application/json": { schema: AskResponse } },
-    },
-    "400": { description: "Invalid request body." },
-    "401": { description: "Not signed in." },
-    "500": { description: "Agent error or misconfiguration." },
-  },
+  body: AskRequest,
+  responses: [
+    { httpCode: 200, schema: AskResponse, description: "Agent's response." },
+    { httpCode: 400, description: "Invalid request body." },
+    { httpCode: 401, description: "Not signed in." },
+    { httpCode: 500, description: "Agent error or misconfiguration." },
+  ],
 });

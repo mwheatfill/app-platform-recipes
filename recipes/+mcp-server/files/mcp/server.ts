@@ -95,7 +95,7 @@ function buildInputShape(op: Operation): Record<string, ZodTypeAny> {
       .describe("Query parameters");
   }
   if (op.hasBody) {
-    shape.body = z.record(z.unknown()).describe("Request body (JSON)");
+    shape.body = z.record(z.string(), z.unknown()).describe("Request body (JSON)");
   }
   return shape;
 }
