@@ -3,10 +3,13 @@
 #
 # Usage:
 #   curl -sSL https://raw.githubusercontent.com/mwheatfill/app-platform-recipes/main/install.sh | \
-#     bash -s -- +mcp-server
+#     bash -s -- mcp/expose-app-as-mcp-server
 #
 # Or, with a local clone:
-#   bash /path/to/app-platform-recipes/install.sh +mcp-server
+#   bash /path/to/app-platform-recipes/install.sh mcp/expose-app-as-mcp-server
+#
+# Recipe identifier is a domain-prefixed path under recipes/ (e.g. auth/better-auth,
+# ai/chat-route, email/send-pipeline).
 #
 # Flags:
 #   --force          overwrite existing files (default: warn and skip)
@@ -21,7 +24,9 @@ FORCE=0
 LOCAL_PATH=""
 
 usage() {
-  echo "Usage: $0 [--force] [--from <path>] [--ref <branch>] <+recipe-name>" >&2
+  echo "Usage: $0 [--force] [--from <path>] [--ref <branch>] <domain>/<recipe-name>" >&2
+  echo "  e.g. $0 auth/better-auth" >&2
+  echo "       $0 mcp/expose-app-as-mcp-server" >&2
   exit 1
 }
 
@@ -33,12 +38,19 @@ while [[ $# -gt 0 ]]; do
     --from) LOCAL_PATH="$2"; shift 2 ;;
     --ref) REF="$2"; shift 2 ;;
     -h|--help) usage ;;
-    +*) RECIPE="$1"; shift ;;
-    *) echo "Unknown arg: $1" >&2; usage ;;
+    --*) echo "Unknown flag: $1" >&2; usage ;;
+    *) RECIPE="$1"; shift ;;
   esac
 done
 
 [[ -z "$RECIPE" ]] && usage
+
+# Validate recipe id shape (must be domain/name, no leading +, no .. traversal)
+if [[ ! "$RECIPE" =~ ^[a-z0-9-]+/[a-z0-9-]+$ ]]; then
+  echo "✗ Invalid recipe id: $RECIPE" >&2
+  echo "  Expected format: <domain>/<recipe-name> (lowercase, dashes ok)" >&2
+  exit 1
+fi
 
 # Resolve recipe source
 if [[ -n "$LOCAL_PATH" ]]; then
@@ -94,5 +106,5 @@ fi
 echo ""
 echo "✅ Recipe $RECIPE installed."
 echo ""
-echo "Read $RECIPE/README.md for next steps:"
+echo "Read the recipe README for next steps:"
 echo "  ${RECIPE_DIR}/README.md"
