@@ -1,0 +1,12 @@
+{
+  "templates": ["cf-fullstack"],
+  "minTemplateVersion": "0.1.0",
+  "implements": "ai-provider",
+  "providesEnvVars": [
+    "AI_PROVIDER",
+    "FOUNDRY_AI_GATEWAY_URL",
+    "FOUNDRY_API_KEY",
+    "FOUNDRY_API_VERSION",
+    "FOUNDRY_DEPLOYMENT"
+  ]
+}

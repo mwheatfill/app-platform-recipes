@@ -1,0 +1,6 @@
+{
+  "templates": ["cf-fullstack"],
+  "minTemplateVersion": "0.1.0",
+  "implements": "email-template",
+  "dependsOn": ["email-pipeline"]
+}

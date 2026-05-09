@@ -1,0 +1,18 @@
+{
+  "templates": ["cf-fullstack"],
+  "minTemplateVersion": "0.1.0",
+  "implements": "auth-provider",
+  "providesEnvVars": [
+    "BETTER_AUTH_SECRET",
+    "BETTER_AUTH_URL",
+    "GOOGLE_CLIENT_ID",
+    "GOOGLE_CLIENT_SECRET",
+    "GITHUB_CLIENT_ID",
+    "GITHUB_CLIENT_SECRET",
+    "APPLE_CLIENT_ID",
+    "APPLE_CLIENT_SECRET",
+    "MICROSOFT_CLIENT_ID",
+    "MICROSOFT_CLIENT_SECRET",
+    "MICROSOFT_TENANT_ID"
+  ]
+}

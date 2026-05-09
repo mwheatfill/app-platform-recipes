@@ -1,0 +1,10 @@
+{
+  "templates": ["cf-fullstack"],
+  "minTemplateVersion": "0.1.0",
+  "implements": "ai-chat-endpoint",
+  "dependsOn": [
+    "auth-provider",
+    "ai-provider"
+  ],
+  "providesEnvVars": []
+}
