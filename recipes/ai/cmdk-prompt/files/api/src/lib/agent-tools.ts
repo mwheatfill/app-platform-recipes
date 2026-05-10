@@ -66,11 +66,11 @@ export function buildAgentTools(ctx: ForwardContext) {
     // operationId: tool({
     //   description: "what this does, in plain English (LLM reads this)",
     //   inputSchema: z.object({
-    //     teamId: z.string().describe("PagerDuty team ID"),
+    //     resourceId: z.string().describe("Resource identifier"),
     //     at: z.string().datetime().optional().describe("ISO timestamp; omit for 'right now'"),
     //   }),
-    //   execute: async ({ teamId, at }) =>
-    //     forward(ctx, "GET", "/oncall", { query: { teamId, at } }),
+    //   execute: async ({ resourceId, at }) =>
+    //     forward(ctx, "GET", "/resources/status", { query: { resourceId, at } }),
     // }),
   };
 }

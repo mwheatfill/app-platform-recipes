@@ -1,0 +1,93 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "REPLACE_ME Copilot action contract",
+    "version": "1.0.0",
+    "description": "Curated minimal OpenAPI contract for Microsoft 365 Copilot. Keep only the action paths this packaged agent uses."
+  },
+  "servers": [
+    {
+      "url": "https://REPLACE_ME-your-app.azurestaticapps.net"
+    }
+  ],
+  "paths": {
+    "/api/agent/example": {
+      "get": {
+        "operationId": "agentGetExample",
+        "summary": "REPLACE_ME read-only agent action",
+        "description": "Replace this operation with one small, bounded read-only action. Prefer explicit parameters over model-side filtering.",
+        "x-openai-isConsequential": false,
+        "x-oai-isConsequential": false,
+        "parameters": [
+          {
+            "name": "query",
+            "in": "query",
+            "required": false,
+            "description": "Optional user intent or filter. Replace with app-specific parameters.",
+            "schema": {
+              "type": "string",
+              "maxLength": 120
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Small answer-first response for Copilot.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AgentExampleResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid agent key, if this action uses per-route auth."
+          },
+          "500": {
+            "description": "Unexpected server error."
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "AgentExampleResponse": {
+        "type": "object",
+        "required": ["answer", "peopleCards"],
+        "properties": {
+          "answer": {
+            "type": "string",
+            "description": "Complete natural-language answer Copilot can repeat without reconstructing facts from arrays."
+          },
+          "peopleCards": {
+            "type": "array",
+            "maxItems": 8,
+            "items": {
+              "$ref": "#/components/schemas/PersonCard"
+            }
+          },
+          "status": {
+            "type": "string",
+            "description": "Optional freshness, fallback, or diagnostic status."
+          }
+        },
+        "additionalProperties": false
+      },
+      "PersonCard": {
+        "type": "object",
+        "required": ["title", "subtitle"],
+        "properties": {
+          "title": { "type": "string" },
+          "subtitle": { "type": "string" },
+          "email": { "type": "string", "format": "email" },
+          "avatarUrl": { "type": "string", "format": "uri" },
+          "detail": { "type": "string" },
+          "status": { "type": "string" }
+        },
+        "additionalProperties": false
+      }
+    }
+  }
+}

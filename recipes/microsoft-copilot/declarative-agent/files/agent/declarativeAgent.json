@@ -2,20 +2,20 @@
   "$schema": "https://developer.microsoft.com/json-schemas/copilot/declarative-agent/v1.5/schema.json",
   "version": "v1.5",
   "name": "REPLACE_ME — App Name",
-  "description": "REPLACE_ME — One sentence describing what this agent helps users with. Keep specific. e.g. 'Find who is on call for any team at any time, with contact actions.'",
+  "description": "REPLACE_ME — One sentence describing what this agent helps users with. Keep specific, for example 'Find current status for important internal resources.'",
   "instructions": "$[file('instructions.md')]",
   "conversation_starters": [
     {
       "title": "REPLACE_ME — Starter 1",
-      "text": "REPLACE_ME — Example user query, e.g. 'Who is on call right now for the Network team?'"
+      "text": "REPLACE_ME — Example user query, for example 'What is the current status of resource A?'"
     },
     {
       "title": "REPLACE_ME — Starter 2",
-      "text": "REPLACE_ME — Example time-window query, e.g. 'Who is covering Information Security in two weeks?'"
+      "text": "REPLACE_ME — Example time-window query, for example 'What changed for resource A this week?'"
     },
     {
       "title": "REPLACE_ME — Starter 3",
-      "text": "REPLACE_ME — Example focused query, e.g. 'Show me all on-call shifts for this week.'"
+      "text": "REPLACE_ME — Example focused query, for example 'Show the top open items for resource A.'"
     }
   ],
   "actions": [

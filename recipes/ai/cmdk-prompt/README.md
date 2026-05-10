@@ -43,7 +43,7 @@ After install, edit:
 ```bash
 npm install   # picks up the new deps (ai sdk, etc.)
 npm run dev:swa
-# Open the app, hit Cmd+K, type "who's on call right now"
+# Open the app, hit Cmd+K, type "show me the current status"
 ```
 
 ## Not handled

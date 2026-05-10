@@ -23,7 +23,7 @@ for presence / directory lookup.
 1. **Shared mailbox** — set `SHARED_MAILBOX_ADDRESS` in SWA app settings (e.g.
    `noreply@switchthink.com`). The Graph `Mail.Send` permission lets the app send AS this
    mailbox.
-2. **Sender display name** — `MAIL_FROM_NAME` in SWA app settings (e.g. `"On-Call Notifier"`).
+2. **Sender display name** — `MAIL_FROM_NAME` in SWA app settings (e.g. `"Example Notifier"`).
 3. **Brand colors / logo** in `api/src/emails/components/EmailLayout.tsx` to match your app.
 
 ## Required Entra ID permissions

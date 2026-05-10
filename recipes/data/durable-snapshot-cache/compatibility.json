@@ -1,0 +1,4 @@
+{
+  "templates": ["az-spa", "az-fullstack"],
+  "notes": "Guidance recipe. Snapshot schema and upstream refresh code are app-specific."
+}

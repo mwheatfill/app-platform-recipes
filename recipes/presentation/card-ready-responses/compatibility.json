@@ -1,0 +1,4 @@
+{
+  "templates": ["az-spa", "az-fullstack", "cf-fullstack"],
+  "notes": "Guidance recipe. Apply to the endpoint/schema that needs card-ready projection."
+}

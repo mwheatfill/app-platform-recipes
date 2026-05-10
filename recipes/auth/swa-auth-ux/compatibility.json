@@ -1,0 +1,4 @@
+{
+  "templates": ["az-spa"],
+  "notes": "Guidance recipe for older SWA React apps. Current template-az-spa already includes this pattern."
+}

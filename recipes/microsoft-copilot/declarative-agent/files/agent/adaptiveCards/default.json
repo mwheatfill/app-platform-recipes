@@ -4,96 +4,65 @@
   "version": "1.5",
   "body": [
     {
-      "type": "Container",
-      "items": [
+      "type": "ColumnSet",
+      "columns": [
         {
-          "type": "TextBlock",
-          "text": "${title}",
-          "weight": "Bolder",
-          "size": "Medium",
-          "wrap": true,
-          "$when": "${exists(title)}"
-        },
-        {
-          "type": "TextBlock",
-          "text": "${subtitle}",
-          "isSubtle": true,
-          "wrap": true,
-          "spacing": "Small",
-          "$when": "${exists(subtitle)}"
-        }
-      ]
-    },
-    {
-      "type": "Container",
-      "$data": "${items}",
-      "items": [
-        {
-          "type": "ColumnSet",
-          "columns": [
+          "type": "Column",
+          "width": "auto",
+          "items": [
             {
-              "type": "Column",
-              "width": "auto",
-              "items": [
-                {
-                  "type": "Image",
-                  "url": "${photoUrl}",
-                  "size": "Small",
-                  "style": "Person",
-                  "$when": "${exists(photoUrl)}"
-                }
-              ]
-            },
-            {
-              "type": "Column",
-              "width": "stretch",
-              "items": [
-                {
-                  "type": "TextBlock",
-                  "text": "${name}",
-                  "weight": "Bolder",
-                  "wrap": true
-                },
-                {
-                  "type": "TextBlock",
-                  "text": "${role}",
-                  "isSubtle": true,
-                  "wrap": true,
-                  "spacing": "None",
-                  "$when": "${exists(role)}"
-                },
-                {
-                  "type": "TextBlock",
-                  "text": "${detail}",
-                  "wrap": true,
-                  "spacing": "Small",
-                  "$when": "${exists(detail)}"
-                }
-              ]
+              "type": "Image",
+              "url": "${avatarUrl}",
+              "size": "Small",
+              "style": "Person",
+              "$when": "${exists(avatarUrl)}"
             }
           ]
         },
         {
-          "type": "ActionSet",
-          "actions": [
+          "type": "Column",
+          "width": "stretch",
+          "items": [
             {
-              "type": "Action.OpenUrl",
-              "title": "Email",
-              "url": "mailto:${email}",
+              "type": "TextBlock",
+              "text": "${title}",
+              "weight": "Bolder",
+              "wrap": true
+            },
+            {
+              "type": "TextBlock",
+              "text": "${subtitle}",
+              "isSubtle": true,
+              "spacing": "None",
+              "wrap": true,
+              "$when": "${exists(subtitle)}"
+            },
+            {
+              "type": "TextBlock",
+              "text": "${detail}",
+              "wrap": true,
+              "spacing": "Small",
+              "$when": "${exists(detail)}"
+            },
+            {
+              "type": "TextBlock",
+              "text": "${email}",
+              "isSubtle": true,
+              "wrap": true,
+              "spacing": "Small",
               "$when": "${exists(email)}"
             },
             {
-              "type": "Action.OpenUrl",
-              "title": "Teams chat",
-              "url": "https://teams.microsoft.com/l/chat/0/0?users=${email}",
-              "$when": "${exists(email)}"
+              "type": "TextBlock",
+              "text": "${status}",
+              "isSubtle": true,
+              "wrap": true,
+              "spacing": "Small",
+              "$when": "${exists(status)}"
             }
-          ],
-          "$when": "${exists(email)}"
+          ]
         }
-      ],
-      "separator": true,
-      "spacing": "Medium"
+      ]
     }
   ]
 }

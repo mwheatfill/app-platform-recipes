@@ -9,7 +9,24 @@
     "localization": {},
     "conversation_starters": []
   },
-  "functions": [],
+  "functions": [
+    {
+      "name": "agentGetExample",
+      "description": "REPLACE_ME — Read-only action exposed to Copilot. Keep this narrow and map it to one operationId in agent/openapi.json.",
+      "capabilities": {
+        "response_semantics": {
+          "data_path": "$.peopleCards",
+          "properties": {
+            "title": "$.title",
+            "subtitle": "$.subtitle"
+          },
+          "static_template": {
+            "file": "adaptiveCards/default.json"
+          }
+        }
+      }
+    }
+  ],
   "runtimes": [
     {
       "type": "OpenApi",
@@ -18,10 +35,10 @@
         "reference_id": "REPLACE_ME — secret reference id from Teams Toolkit"
       },
       "spec": {
-        "url": "REPLACE_ME — https://your-app.azurestaticapps.net/api/openapi.json",
+        "url": "openapi.json",
         "progress_style": "ShowUsageWithInputAndOutput"
       },
-      "run_for_functions": []
+      "run_for_functions": ["agentGetExample"]
     }
   ]
 }
