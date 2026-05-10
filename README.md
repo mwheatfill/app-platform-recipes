@@ -101,6 +101,18 @@ These are named in the brief and reserved (the install paths below are stable) b
 | `email/cloudflare-email-service` | Cloudflare Email Service (public beta sending API). | `cf-fullstack` |
 | `email/cloudflare-email-routing` | Inbound email at custom domains via Email Workers. | `cf-fullstack` |
 
+### Observability
+
+Each recipe overlays `src/lib/log.ts` (and adds siblings under `src/lib/monitoring/`) so app code keeps calling `logInfo`/`logError` from `@/lib/log`. The wrapper is the canonical seam; recipes never ask app code to import their SDK directly.
+
+| Recipe | Planned scope | Templates |
+| --- | --- | --- |
+| `monitoring/sentry` | `@sentry/cloudflare` (worker entry) + `@sentry/react` (client) + source-map upload in CI. `logError` overlay calls `Sentry.captureException`; `logInfo` adds a Sentry breadcrumb. | `cf-fullstack` |
+| `monitoring/azure-app-insights` | `applicationinsights` SDK wired to `@/lib/log`. For apps that deploy on Azure or whose customer mandates App Insights. | `cf-fullstack`, `az-fullstack`, `az-spa` |
+| `monitoring/otel-export` | Cloudflare's native OTel export pipe (beta) + `@microlabs/otel-cf-workers` for in-app spans. Targets Axiom / Honeycomb / Grafana / Sentry as the OTLP backend. | `cf-fullstack` |
+| `monitoring/cloudflare-logpush-r2` | Push raw Workers Logs to R2 for durable archive (compliance / audit). No app code change; pure wrangler config. | `cf-fullstack` |
+| `monitoring/posthog` | `posthog-js` (browser) + `posthog-node` (worker) wired through `src/lib/analytics/`. Covers product analytics, feature flags, and session replay. | `cf-fullstack` |
+
 ### Data + capability
 
 | Recipe | Planned scope | Templates |
