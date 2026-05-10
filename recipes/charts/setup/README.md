@@ -7,18 +7,30 @@ description: "Adds shadcn Chart (Recharts v3 wrapper) and an example /charts rou
 
 # `charts/setup`
 
-shadcn Chart plus a working example at `/charts` (area + bar side by side, fed via `createServerFn` + `queryOptions` + `useSuspenseQuery`).
+[shadcn Chart](https://ui.shadcn.com/docs/components/chart) (Recharts v3 wrapper) plus a working example at `/charts`. shadcn Chart vendors a small set of typed primitives into `src/components/ui/chart.tsx`; Recharts is the rendering engine underneath.
+
+Why shadcn Chart over Chart.js / Victory / Plotly / Nivo / ECharts: see [ADR-008: UI / visual layer](https://github.com/mwheatfill/template-cf-fullstack/blob/main/docs/adr/008-ui-visual-layer.md).
 
 ## Supported templates
 
 `template-cf-fullstack`.
+
+## Install
+
+```bash
+# from the consuming app's repo root
+curl -sSL https://raw.githubusercontent.com/mwheatfill/app-platform-recipes/main/install.sh | \
+  bash -s -- charts/setup
+```
+
+See the [top-level README](https://github.com/mwheatfill/app-platform-recipes#install-a-recipe) for the installer mechanism (compatibility checking, idempotent copy, etc.).
 
 ## What this recipe adds
 
 | Path | Purpose |
 | --- | --- |
 | `src/components/ui/chart.tsx` | shadcn Chart primitives (`ChartContainer`, `ChartTooltip`, `ChartTooltipContent`, `ChartLegend`, `ChartLegendContent`, `ChartConfig`). Installed by `npx shadcn@latest add chart`. |
-| `src/routes/charts.tsx` | Example route at `/charts`, matching the data pattern in `src/routes/index.tsx`. |
+| `src/routes/charts.tsx` | Example route at `/charts`. Server function via `createServerFn`, declared as `queryOptions`, hydrated by the route loader (`context.queryClient.ensureQueryData`), consumed in the component with `useSuspenseQuery`. |
 
 ## After install
 
@@ -28,9 +40,22 @@ shadcn Chart plus a working example at `/charts` (area + bar side by side, fed v
 
 ## Pattern
 
-Import primitives from `@/components/ui/chart`. Define a `chartConfig` object (one entry per series, with `label` and `color`) and pass it to `<ChartContainer>`. Compose Recharts components (`AreaChart`, `BarChart`, `Bar`, `Area`, `XAxis`, `CartesianGrid`) inside.
+Import primitives from `@/components/ui/chart`. Define a `chartConfig` object (one entry per series, each with `label` and `color`) and pass it to `<ChartContainer>`. The container exposes one CSS variable per config key: the `desktop` entry becomes `var(--color-desktop)`, used on Recharts `fill` and `stroke` props.
 
-Colors come from CSS variables: `var(--color-<key>)`. No `hsl()` wrapper, no hex literals.
+```tsx
+const chartConfig = {
+  visitors: { label: 'Visitors', color: 'var(--chart-1)' },
+} satisfies ChartConfig
+
+<ChartContainer config={chartConfig}>
+  <AreaChart data={data}>
+    <Area dataKey="visitors" fill="var(--color-visitors)" stroke="var(--color-visitors)" />
+    <ChartTooltip content={<ChartTooltipContent />} />
+  </AreaChart>
+</ChartContainer>
+```
+
+Colors flow through CSS variables only; no `hsl()` wrapper, no hex literals.
 
 ## What this recipe does NOT handle
 
