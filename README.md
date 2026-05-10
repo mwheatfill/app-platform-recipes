@@ -113,6 +113,48 @@ Each recipe overlays `src/lib/log.ts` (and adds siblings under `src/lib/monitori
 | `monitoring/cloudflare-logpush-r2` | Push raw Workers Logs to R2 for durable archive (compliance / audit). No app code change; pure wrangler config. | `cf-fullstack` |
 | `monitoring/posthog` | `posthog-js` (browser) + `posthog-node` (worker) wired through `src/lib/analytics/`. Covers product analytics, feature flags, and session replay. | `cf-fullstack` |
 
+### Editor / content
+
+| Recipe | Planned scope | Templates |
+| --- | --- | --- |
+| `editor/tiptap` | TipTap (`@tiptap/core` + `@tiptap/pm`) wired into a typed Zod-validated form field. The canonical React rich-text editor for 2026; HoopsLoop already uses it. | `cf-fullstack` |
+
+### Billing
+
+| Recipe | Planned scope | Templates |
+| --- | --- | --- |
+| `billing/stripe` | Stripe SDK wired through `src/lib/billing/`. Webhook receiver via the Worker, customer portal redirect, subscription state cached in D1. | `cf-fullstack` |
+
+### Background work / scheduled / workflows
+
+All Cloudflare-native primitives. No external job queue (Bull/BullMQ/Agenda are Node-only and don't fit Workers).
+
+| Recipe | Planned scope | Templates |
+| --- | --- | --- |
+| `background/queue-consumer` | Cloudflare Queues producer + a consumer Worker for async work after responding (audit log writes, fan-out emails, etc.). | `cf-fullstack` |
+| `background/cron-trigger` | Cloudflare Cron Triggers in `wrangler.jsonc` + a `scheduled()` handler. Covers daily snapshots, periodic cleanup, retry sweeps. | `cf-fullstack` |
+| `background/workflow` | Cloudflare Workflows for multi-step durable work (saga, retry-with-state, long-running orchestrations). | `cf-fullstack` |
+
+### Real-time / WebSocket
+
+| Recipe | Planned scope | Templates |
+| --- | --- | --- |
+| `realtime/durable-object-websocket` | Durable Object + `WebSocketPair` for stateful long-lived connections (presence, collaborative editing, live-update streams). The only Workers-native real-time path. | `cf-fullstack` |
+
+### Search
+
+| Recipe | Planned scope | Templates |
+| --- | --- | --- |
+| `search/d1-fts5` | SQLite FTS5 virtual table on D1 + Drizzle-friendly raw-SQL helpers. Pure lexical search; zero extra binding. | `cf-fullstack` |
+| `search/vectorize` | Vectorize index + Workers AI bge embeddings. Pure semantic search. | `cf-fullstack` |
+| `search/cloudflare-ai-search` | Cloudflare AI Search (rebranded AutoRAG; shipped April 2026). Hybrid BM25+vector with relevance boosting; managed bundle of R2 + Vectorize + Workers AI + AI Gateway. Replaces most reasons to reach for Algolia / Typesense / Meilisearch. | `cf-fullstack` |
+
+### Image transforms
+
+| Recipe | Planned scope | Templates |
+| --- | --- | --- |
+| `images/cloudflare-images` | Cloudflare Images binding for resize / format conversion / quality on the edge. Free tier covers prototype. | `cf-fullstack` |
+
 ### Data + capability
 
 | Recipe | Planned scope | Templates |
