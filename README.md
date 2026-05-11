@@ -73,6 +73,14 @@ These have actual recipe directories and can be installed today. The "Planned" s
 | --- | --- | --- |
 | `monitoring/sentry` | `@sentry/cloudflare` (worker) + `@sentry/react` (browser) + `@sentry/vite-plugin` (source-map upload). `enableLogs: true` mirrors `console.*` from `@/lib/log` to Sentry. | `cf-fullstack` |
 
+### Background work
+
+| Recipe | What it adds | Templates |
+| --- | --- | --- |
+| `background/cron-trigger` | `scheduled()` handler + `triggers.crons` wrangler config. Helper `handleScheduled(controller, env, ctx)` logs the fire and branches via `controller.cron`. | `cf-fullstack` |
+| `background/queue-consumer` | Cloudflare Queues producer + consumer. `consumeQueueBatch(batch, env, ctx, processOne)` iterates with per-message ack/retry; `sendToQueue` / `sendBatchToQueue` typed producers. DLQ documented. | `cf-fullstack` |
+| `background/workflow` | `WorkflowEntrypoint` example class with `step.do` + `step.sleep` + `retries` config. Pattern for triggering via `env.MY_WORKFLOW.create({ params })`. | `cf-fullstack` |
+
 ### Microsoft Copilot (Azure templates)
 
 | Recipe | What it adds | Templates |
@@ -139,16 +147,6 @@ Each recipe overlays `src/lib/log.ts` (and adds siblings under `src/lib/monitori
 | Recipe | Planned scope | Templates |
 | --- | --- | --- |
 | `billing/stripe` | Stripe SDK wired through `src/lib/billing/`. Webhook receiver via the Worker, customer portal redirect, subscription state cached in D1. | `cf-fullstack` |
-
-### Background work / scheduled / workflows
-
-All Cloudflare-native primitives. No external job queue (Bull/BullMQ/Agenda are Node-only and don't fit Workers).
-
-| Recipe | Planned scope | Templates |
-| --- | --- | --- |
-| `background/queue-consumer` | Cloudflare Queues producer + a consumer Worker for async work after responding (audit log writes, fan-out emails, etc.). | `cf-fullstack` |
-| `background/cron-trigger` | Cloudflare Cron Triggers in `wrangler.jsonc` + a `scheduled()` handler. Covers daily snapshots, periodic cleanup, retry sweeps. | `cf-fullstack` |
-| `background/workflow` | Cloudflare Workflows for multi-step durable work (saga, retry-with-state, long-running orchestrations). | `cf-fullstack` |
 
 ### Real-time / WebSocket
 
