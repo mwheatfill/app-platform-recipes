@@ -1,0 +1,16 @@
+{
+  "templates": ["cf-fullstack"],
+  "minTemplateVersion": "0.1.0",
+  "implements": "monitoring",
+  "providesEnvVars": [
+    "SENTRY_DSN",
+    "SENTRY_RELEASE",
+    "VITE_SENTRY_DSN",
+    "VITE_PUBLIC_ENV"
+  ],
+  "providesCISecrets": [
+    "SENTRY_AUTH_TOKEN",
+    "SENTRY_ORG",
+    "SENTRY_PROJECT"
+  ]
+}

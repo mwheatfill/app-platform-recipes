@@ -67,6 +67,12 @@ These have actual recipe directories and can be installed today. The "Planned" s
 | `mcp/expose-app-as-mcp-server` | Worker-hosted MCP server over Streamable HTTP, OpenAPI-driven tool generation. Pairs with the template's `.well-known/mcp-server-card`. | `cf-fullstack`, `az-spa`, `az-fullstack` |
 | `charts/setup` | shadcn Chart (Recharts under the hood) with chartConfig → `var(--color-<key>)` pattern + an example `/charts` route. | `cf-fullstack` |
 
+### Observability
+
+| Recipe | What it adds | Templates |
+| --- | --- | --- |
+| `monitoring/sentry` | `@sentry/cloudflare` (worker) + `@sentry/react` (browser) + `@sentry/vite-plugin` (source-map upload). `enableLogs: true` mirrors `console.*` from `@/lib/log` to Sentry. | `cf-fullstack` |
+
 ### Microsoft Copilot (Azure templates)
 
 | Recipe | What it adds | Templates |
@@ -81,7 +87,7 @@ These have actual recipe directories and can be installed today. The "Planned" s
 
 These are named in the brief and reserved (the install paths below are stable) but not yet built. PRs welcome.
 
-**Next up** (highest leverage, roughly in order): `monitoring/sentry`, `dashboard/scaffold`, `data-layer/switch-to-neon-postgres`, `motion/setup`, `editor/tiptap`, `billing/stripe`. Beyond these, build by demand.
+**Next up** (highest leverage, roughly in order): `dashboard/scaffold`, `data-layer/switch-to-neon-postgres`, `motion/setup`, `editor/tiptap`, `billing/stripe`. Beyond these, build by demand.
 
 ### AI providers
 
@@ -105,7 +111,6 @@ Each recipe overlays `src/lib/log.ts` (and adds siblings under `src/lib/monitori
 
 | Recipe | Planned scope | Templates |
 | --- | --- | --- |
-| `monitoring/sentry` | `@sentry/cloudflare` (worker entry) + `@sentry/react` (client) + source-map upload in CI. `logError` overlay calls `Sentry.captureException`; `logInfo` adds a Sentry breadcrumb. | `cf-fullstack` |
 | `monitoring/azure-app-insights` | `applicationinsights` SDK wired to `@/lib/log`. For apps that deploy on Azure or whose customer mandates App Insights. | `cf-fullstack`, `az-fullstack`, `az-spa` |
 | `monitoring/otel-export` | Cloudflare's native OTel export pipe (beta) + `@microlabs/otel-cf-workers` for in-app spans. Targets Axiom / Honeycomb / Grafana / Sentry as the OTLP backend. | `cf-fullstack` |
 | `monitoring/cloudflare-logpush-r2` | Push raw Workers Logs to R2 for durable archive (compliance / audit). No app code change; pure wrangler config. | `cf-fullstack` |
