@@ -1,0 +1,10 @@
+{
+  "templates": ["cf-fullstack"],
+  "minTemplateVersion": "0.1.0",
+  "implements": "auth-provider",
+  "providesEnvVars": [
+    "TEAM_DOMAIN",
+    "POLICY_AUD",
+    "DEV_AUTH_BYPASS_USER"
+  ]
+}

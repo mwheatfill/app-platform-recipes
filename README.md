@@ -42,6 +42,7 @@ These have actual recipe directories and can be installed today. The "Planned" s
 | Recipe | What it adds | Templates |
 | --- | --- | --- |
 | `auth/better-auth` | Better Auth with multi-provider env-driven config (email + password, email-OTP, social OAuth, Microsoft Entra OIDC). Implements the template's `getCurrentUser` abstraction. | `cf-fullstack` |
+| `auth/cloudflare-access` | Cloudflare Access JWT validation via `jose` + remote JWKS. Implements the same `getCurrentUser` abstraction. Use when CF Access fronts the app. | `cf-fullstack` |
 | `ai/chat-route` | Auth-protected streaming chat endpoint with the `Content-Encoding: identity` Workers SSE fix. Depends on an auth recipe. | `cf-fullstack` |
 | `ai/chat-ui` | Chat surface using `useChat` (raw Tailwind; documented AI Elements upgrade path). | `cf-fullstack` |
 | `email/send-pipeline` | `sendEmail(input)` dispatcher with React Email render layer; `email:dev` preview script. Depends on a transport recipe. | `cf-fullstack` |
@@ -81,12 +82,6 @@ These have actual recipe directories and can be installed today. The "Planned" s
 These are named in the brief and reserved (the install paths below are stable) but not yet built. PRs welcome.
 
 **Next up** (highest leverage, roughly in order): `monitoring/sentry`, `dashboard/scaffold`, `data-layer/switch-to-neon-postgres`, `motion/setup`, `editor/tiptap`, `billing/stripe`. Beyond these, build by demand.
-
-### Auth
-
-| Recipe | Planned scope | Templates |
-| --- | --- | --- |
-| `auth/cloudflare-access` | Cloudflare Access JWT validation as the auth provider. Same `getCurrentUser` abstraction; provider swap is mechanical. | `cf-fullstack` |
 
 ### AI providers
 
