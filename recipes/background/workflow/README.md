@@ -74,6 +74,35 @@ Keep step callbacks small and idempotent. They may re-run on retry; `ctx.attempt
 
 Steps return JSON-serializable data; the engine persists what you return so the next step can use it.
 
+## Workflow vs Queue: which to use
+
+Both run async work after responding. Use:
+
+- **Queue** when work completes in one shot, finishes inside a Worker invocation budget (a few seconds of CPU), and the at-least-once / per-message retry model is enough. Fan-out emails, audit-log writes, single-step transforms, single HTTP calls. Cheap per message.
+- **Workflow** when work has multiple steps that must individually persist, sleeps between steps (minutes to weeks), waits for external events (`waitForEvent`), needs retry-with-state, or needs human-in-the-loop approval. Multi-step AI pipelines, payment sagas, trial expirations, complex provisioning. Billed per step, more expensive per invocation.
+
+Rule of thumb: if you can describe the work in one sentence with no "then wait" or "then if approved", Queue. Otherwise, Workflow.
+
+## Querying status
+
+The UI surfacing in-flight workflows reads status via the binding:
+
+```ts
+const instance = await env.EXAMPLE_WORKFLOW.get(instanceId)
+const status = await instance.status()
+// status.status: 'queued' | 'running' | 'paused' | 'errored' | 'terminated' | 'complete' | 'waiting' | 'waitingForPause' | 'unknown'
+// status.output: the final return value when status === 'complete'
+// status.error: error info when status === 'errored'
+```
+
+For a run-history list view, persist the `instanceId` in D1 when you create the workflow (`env.EXAMPLE_WORKFLOW.create({ params })` returns `{ id }`). The D1 row keeps the user-visible metadata; query Workflow status on-demand when rendering.
+
+## Cost model
+
+Workflows are billed under Workers Standard pricing on three dimensions: CPU time (milliseconds of compute), requests (invocations; subrequests don't incur additional request costs), and storage (GB of persisted instance state). An idle Workflow waiting on an external API response, paused, or asleep via `step.sleep` does not incur CPU time.
+
+For apps firing many short jobs, route the bulk to Queues and reserve Workflows for the cases where durability across isolate restarts, long sleeps, or `waitForEvent` actually earn their keep.
+
 ## What this recipe does NOT handle
 
 - **App-level orchestration logic.** The example workflow body is a stub. Each app composes its own steps.

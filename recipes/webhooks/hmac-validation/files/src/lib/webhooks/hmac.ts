@@ -1,45 +1,59 @@
+export type HmacAlgorithm = 'SHA-256' | 'SHA-384' | 'SHA-512'
+
 export interface VerifyHmacOptions {
   payload: string | ArrayBuffer
-  signature: string
+  // Accept a string (single signature) or array (rotation: multiple
+  // valid signatures in flight, e.g. Stripe / Slack during secret roll).
+  signature: string | readonly string[]
   secret: string
+  algorithm?: HmacAlgorithm
   prefix?: string
 }
 
 // crypto.subtle.verify performs constant-time comparison internally.
+// keyCache accretes one entry per distinct secret+algorithm per isolate.
+// Bounded by source count, not request count; swap to an LRU if per-tenant
+// secrets ever produce unbounded distinct keys.
 const encoder = new TextEncoder()
 const keyCache = new Map<string, Promise<CryptoKey>>()
 
-function getHmacKey(secret: string): Promise<CryptoKey> {
-  let cached = keyCache.get(secret)
+function getHmacKey(secret: string, algorithm: HmacAlgorithm): Promise<CryptoKey> {
+  const cacheKey = `${algorithm}:${secret}`
+  let cached = keyCache.get(cacheKey)
   if (!cached) {
     cached = crypto.subtle.importKey(
       'raw',
       encoder.encode(secret),
-      { name: 'HMAC', hash: 'SHA-256' },
+      { name: 'HMAC', hash: algorithm },
       false,
       ['verify'],
     )
-    keyCache.set(secret, cached)
+    keyCache.set(cacheKey, cached)
   }
   return cached
 }
 
 export async function verifyHmacSignature(opts: VerifyHmacOptions): Promise<boolean> {
-  const sig =
-    opts.prefix && opts.signature.startsWith(opts.prefix)
-      ? opts.signature.slice(opts.prefix.length)
-      : opts.signature
-  const sigBytes = hexToBytes(sig)
-  if (!sigBytes) return false
+  const algorithm = opts.algorithm ?? 'SHA-256'
+  const signatures = typeof opts.signature === 'string' ? [opts.signature] : opts.signature
+  if (signatures.length === 0) return false
 
-  const key = await getHmacKey(opts.secret)
+  const key = await getHmacKey(opts.secret, algorithm)
   const payloadBytes =
     typeof opts.payload === 'string' ? encoder.encode(opts.payload) : new Uint8Array(opts.payload)
-  try {
-    return await crypto.subtle.verify('HMAC', key, sigBytes, payloadBytes)
-  } catch {
-    return false
+
+  for (const raw of signatures) {
+    const stripped =
+      opts.prefix && raw.startsWith(opts.prefix) ? raw.slice(opts.prefix.length) : raw
+    const sigBytes = hexToBytes(stripped)
+    if (!sigBytes) continue
+    try {
+      if (await crypto.subtle.verify('HMAC', key, sigBytes, payloadBytes)) return true
+    } catch {
+      // try next signature
+    }
   }
+  return false
 }
 
 function hexToBytes(hex: string): Uint8Array | null {

@@ -1,8 +1,8 @@
 # `webhooks/hmac-validation`
 
-HMAC-SHA256 signature verification for inbound webhooks. Single helper, no dependencies, uses Workers' Web Crypto API. The pair recipe [`webhooks/inbound-receiver`](../inbound-receiver) builds on top of this for the full "receive → validate → enqueue → archive" pattern.
+HMAC signature verification for inbound webhooks. Single helper, no dependencies, uses Workers' Web Crypto API. Supports SHA-256 / SHA-384 / SHA-512, single or rotating signatures, and an optional prefix strip. The pair recipe [`webhooks/inbound-receiver`](../inbound-receiver) builds on top of this for the full "receive → validate → enqueue → archive" pattern.
 
-Use when you're accepting webhooks from a provider that signs payloads with HMAC-SHA256: GitHub, Stripe, Slack, GitLab, Cloudflare itself, most CI providers, most payment providers. For non-HMAC signature schemes (RSA, Ed25519) you'll need a different recipe.
+Use when you're accepting webhooks from a provider that signs payloads with HMAC: GitHub, Stripe, Slack, GitLab, Cloudflare itself, most CI providers, most payment providers. For non-HMAC signature schemes (RSA, Ed25519) you'll need a different recipe.
 
 ## Supported templates
 
@@ -12,7 +12,7 @@ Use when you're accepting webhooks from a provider that signs payloads with HMAC
 
 | Path | Purpose |
 | --- | --- |
-| `src/lib/webhooks/hmac.ts` | `verifyHmacSignature({ payload, signature, secret, prefix? })` returns a `Promise<boolean>`. Uses `crypto.subtle.verify` (timing-safe). |
+| `src/lib/webhooks/hmac.ts` | `verifyHmacSignature({ payload, signature, secret, algorithm?, prefix? })` returns a `Promise<boolean>`. Uses `crypto.subtle.verify` (timing-safe). |
 
 No npm dependencies; Web Crypto is built into Workers.
 
@@ -20,12 +20,13 @@ No npm dependencies; Web Crypto is built into Workers.
 
 Web Crypto's `crypto.subtle.verify` performs constant-time comparison internally. The helper:
 
-1. Strips an optional `prefix` from the signature (`sha256=` for GitHub, `v1=` for Stripe, etc.).
-2. Hex-decodes the remaining signature to bytes.
-3. Imports the secret as an HMAC-SHA256 key.
-4. Calls `crypto.subtle.verify('HMAC', key, sigBytes, payloadBytes)`.
+1. Resolves the algorithm (default `SHA-256`).
+2. Strips an optional `prefix` from the signature (`sha256=` for GitHub, `v1=` for Stripe, etc.).
+3. Hex-decodes the remaining signature to bytes.
+4. Imports the secret as an HMAC key (cached per `secret+algorithm` at module scope so the import runs once per isolate).
+5. Calls `crypto.subtle.verify('HMAC', key, sigBytes, payloadBytes)`. Returns `true` on the first match when multiple signatures are supplied.
 
-Returns `false` on any decode failure rather than throwing, so route handlers branch on a single boolean. Imported CryptoKeys are cached per-secret at module scope so repeat verifications skip the `importKey` round-trip.
+Returns `false` on any decode failure rather than throwing, so route handlers branch on a single boolean.
 
 ## Usage
 
@@ -45,24 +46,62 @@ const valid = await verifyHmacSignature({
 })
 ```
 
-### Stripe (`Stripe-Signature: t=<ts>,v1=<hex>`)
+### Stripe (`Stripe-Signature: t=<ts>,v1=<hex>[,v1=<hex>]`)
 
-Stripe signs `<timestamp>.<body>`, not the body alone. The Stripe header can also carry multiple `v1=` entries during a secret rotation; the example below covers the single-signature case only. Parse the header first:
+Stripe signs `<timestamp>.<body>` and may include multiple `v1=` entries during a secret rotation. Parse the header, pass every `v1` value as the signature array:
 
 ```ts
 const header = request.headers.get('stripe-signature') ?? ''
-const parts = Object.fromEntries(header.split(',').map((p) => p.split('=') as [string, string]))
-const timestamp = parts.t
-const signature = parts.v1
+const parts = header.split(',').flatMap((p) => {
+  const eq = p.indexOf('=')
+  return eq === -1 ? [] : [[p.slice(0, eq), p.slice(eq + 1)] as [string, string]]
+})
+const timestamp = parts.find(([k]) => k === 't')?.[1] ?? ''
+const signatures = parts.filter(([k]) => k === 'v1').map(([, v]) => v)
 const body = await request.text()
 const valid = await verifyHmacSignature({
   payload: `${timestamp}.${body}`,
-  signature,
-  secret: env.STRIPE_WEBHOOK_SECRET ?? '',
+  signature: signatures,
+  secret: env.STRIPE_WEBHOOK_SECRET,
 })
 ```
 
-Also reject stale timestamps to prevent replay attacks (Stripe recommends a 5-minute tolerance window). That logic is app-specific and not part of the recipe.
+Also reject stale timestamps to prevent replay attacks (Stripe recommends a 5-minute tolerance window). That logic is app-specific; the [`webhooks/inbound-receiver`](../inbound-receiver) recipe accepts a `replayWindow` option for the comparison.
+
+### Slack (rotating signing secrets)
+
+Slack sends one signature per request but supports two valid secrets during rotation. Verify against both:
+
+```ts
+const body = await request.text()
+const valid = await verifyHmacSignature({
+  payload: `v0:${timestamp}:${body}`,
+  signature: request.headers.get('x-slack-signature') ?? '',
+  secret: env.SLACK_SIGNING_SECRET_CURRENT,
+  prefix: 'v0=',
+})
+const validFallback = valid
+  ? true
+  : await verifyHmacSignature({
+      payload: `v0:${timestamp}:${body}`,
+      signature: request.headers.get('x-slack-signature') ?? '',
+      secret: env.SLACK_SIGNING_SECRET_PREVIOUS ?? '',
+      prefix: 'v0=',
+    })
+```
+
+### Non-SHA-256 algorithms
+
+Some providers sign with SHA-384 or SHA-512:
+
+```ts
+const valid = await verifyHmacSignature({
+  payload: body,
+  signature: request.headers.get('x-signature-512') ?? '',
+  secret: env.WEBHOOK_SECRET,
+  algorithm: 'SHA-512',
+})
+```
 
 ### Generic (`X-Signature: <hex>`)
 
@@ -96,10 +135,11 @@ declare namespace Cloudflare {
 
 ## What this recipe does NOT handle
 
-- **Reading the request body.** The helper accepts `string | ArrayBuffer`; the caller reads the body. Reading once and reusing is important — most webhooks need both the body for signature verification and the parsed body for processing.
-- **Replay protection.** Timestamp tolerance windows (Stripe, Slack) are app-specific. Validate the timestamp claim in the header before passing to `verifyHmacSignature`.
+- **Reading the request body.** The helper accepts `string | ArrayBuffer`; the caller reads the body. Read once and reuse.
+- **Replay protection by timestamp.** See `webhooks/inbound-receiver`'s `replayWindow` option.
+- **Idempotency-key dedup.** Same recipe.
 - **Non-HMAC schemes.** RSA-signed webhooks (Apple, some banking APIs) and Ed25519-signed webhooks (Discord) need different helpers.
-- **The route itself.** The helper is a building block. For a full receiver that validates + enqueues + archives, install [`webhooks/inbound-receiver`](../inbound-receiver).
+- **The route itself.** The helper is a building block. For the full receiver, install [`webhooks/inbound-receiver`](../inbound-receiver).
 
 ## After install
 

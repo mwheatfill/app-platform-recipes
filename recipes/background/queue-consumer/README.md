@@ -111,6 +111,53 @@ App code sends via `sendToQueue`. The Worker's `queue()` export consumes via `co
 
 For advanced producer options (per-message `contentType`, `delaySeconds`), call `env.MY_QUEUE.send` / `sendBatch` directly with `MessageSendRequest<T>` objects; the helpers in `producer.ts` cover the common case.
 
+## Multi-queue routing
+
+A Worker can consume from multiple queues with one `queue` export. `batch.queue` carries the queue name:
+
+```ts
+async queue(batch: MessageBatch<unknown>, env: Cloudflare.Env, ctx: ExecutionContext) {
+  switch (batch.queue) {
+    case 'dispatch':
+      return consumeQueueBatch(batch as MessageBatch<DispatchMessage>, env, ctx, processDispatch)
+    case 'webhooks':
+      return consumeQueueBatch(batch as MessageBatch<InboundWebhookMessage>, env, ctx, processWebhook)
+    default:
+      // Unknown queue name; ack all rather than retry forever.
+      batch.ackAll()
+  }
+}
+```
+
+The cast is necessary because `MessageBatch<unknown>` is the union over both queue types. Each branch owns its narrow type.
+
+## Idempotency
+
+Queues delivers at-least-once. Duplicate messages will arrive. Make `processOne` idempotent at the business-operation level:
+
+- For "execute scheduled job" messages, key on the job-run ID and write a row to D1 inside a transaction; the unique constraint short-circuits duplicates.
+- For "send notification" messages, key on a stable composite (`source + event_id + recipient`) and check before sending.
+- For pure side-effect-free transforms (read X, derive Y, write to R2 at deterministic path), idempotency is free.
+
+## Final-attempt handling
+
+To take a different action on the last attempt before the message DLQs (write a `failed` row to D1, emit a critical-severity log, page on-call), check `message.attempts` against the consumer's configured `max_retries`:
+
+```ts
+async function processOne(message: Message<DispatchMessage>, env: Cloudflare.Env, _ctx: ExecutionContext) {
+  try {
+    await executeJob(message.body, env)
+  } catch (err) {
+    if (message.attempts >= MAX_RETRIES) {
+      await markFailedInDb(env.DB, message.body.jobId, err)
+    }
+    throw err // re-throw so consumeQueueBatch calls retry()
+  }
+}
+```
+
+Keep `MAX_RETRIES` in sync with `wrangler.jsonc`'s `max_retries`. The platform will deliver the DLQ message itself; the final-attempt branch above is for app-level bookkeeping before the DLQ delivery.
+
 ## After install
 
 1. Create the queue (and optional DLQ) via `wrangler queues create`.

@@ -1,5 +1,5 @@
 import { logError } from '@/lib/log'
-import { verifyHmacSignature } from './hmac'
+import { type HmacAlgorithm, verifyHmacSignature } from './hmac'
 
 export interface InboundWebhookMessage {
   source: string
@@ -14,9 +14,9 @@ export interface InboundWebhookOptions {
   secret: string
   signatureHeader: string
   signaturePrefix?: string
-  // Header names to copy into the queued message. Default empty; the
-  // raw request headers contain auth cookies, IP, and the signature
-  // itself, none of which belong in downstream queue storage.
+  signatureAlgorithm?: HmacAlgorithm
+  replayWindow?: { timestamp: number; maxAgeSeconds: number }
+  idempotency?: { kv: KVNamespace; keyHeader: string; ttlSeconds?: number }
   captureHeaders?: readonly string[]
   queue?: Queue<InboundWebhookMessage>
   archive?: { bucket: R2Bucket; prefix: string }
@@ -27,14 +27,36 @@ export interface InboundWebhookResult {
   body: string
 }
 
+const DEFAULT_IDEMPOTENCY_TTL_SECONDS = 24 * 60 * 60
+
 export async function handleInboundWebhook(
   source: string,
   opts: InboundWebhookOptions,
 ): Promise<InboundWebhookResult> {
-  const { request, secret, signatureHeader, signaturePrefix, captureHeaders, queue, archive } = opts
+  const {
+    request,
+    secret,
+    signatureHeader,
+    signaturePrefix,
+    signatureAlgorithm,
+    replayWindow,
+    idempotency,
+    captureHeaders,
+    queue,
+    archive,
+  } = opts
+
   const signature = request.headers.get(signatureHeader)
   if (!signature) {
     return { status: 401, body: 'Missing signature' }
+  }
+
+  if (replayWindow) {
+    const ageSeconds = Math.abs(Date.now() / 1000 - replayWindow.timestamp)
+    if (ageSeconds > replayWindow.maxAgeSeconds) {
+      logError('webhook.replay.stale', undefined, { source, ageSeconds })
+      return { status: 401, body: 'Stale timestamp' }
+    }
   }
 
   const body = await request.text()
@@ -43,10 +65,20 @@ export async function handleInboundWebhook(
     signature,
     secret,
     ...(signaturePrefix !== undefined ? { prefix: signaturePrefix } : {}),
+    ...(signatureAlgorithm !== undefined ? { algorithm: signatureAlgorithm } : {}),
   })
   if (!valid) {
     logError('webhook.signature.invalid', undefined, { source })
     return { status: 401, body: 'Invalid signature' }
+  }
+
+  const idempotencyKey = idempotency ? request.headers.get(idempotency.keyHeader) : null
+  const idempotencyKvKey = idempotencyKey ? `${source}:${idempotencyKey}` : null
+  if (idempotency && idempotencyKvKey) {
+    const existing = await idempotency.kv.get(idempotencyKvKey)
+    if (existing !== null) {
+      return { status: 200, body: 'OK (duplicate)' }
+    }
   }
 
   const receivedAt = Date.now()
@@ -84,6 +116,12 @@ export async function handleInboundWebhook(
     )
   }
   await Promise.all(work)
+
+  if (idempotency && idempotencyKvKey) {
+    await idempotency.kv.put(idempotencyKvKey, String(receivedAt), {
+      expirationTtl: idempotency.ttlSeconds ?? DEFAULT_IDEMPOTENCY_TTL_SECONDS,
+    })
+  }
 
   return { status: 200, body: 'OK' }
 }
