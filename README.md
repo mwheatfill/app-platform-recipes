@@ -64,6 +64,7 @@ These have actual recipe directories and can be installed today. The "Planned" s
 | Recipe | What it adds | Templates |
 | --- | --- | --- |
 | `mcp/expose-app-as-mcp-server` | Worker-hosted MCP server over Streamable HTTP, OpenAPI-driven tool generation. Pairs with the template's `.well-known/mcp-server-card`. | `cf-fullstack`, `az-spa`, `az-fullstack` |
+| `charts/setup` | shadcn Chart (Recharts under the hood) with chartConfig → `var(--color-<key>)` pattern + an example `/charts` route. | `cf-fullstack` |
 
 ### Microsoft Copilot (Azure templates)
 
@@ -78,6 +79,8 @@ These have actual recipe directories and can be installed today. The "Planned" s
 ## Planned recipes
 
 These are named in the brief and reserved (the install paths below are stable) but not yet built. PRs welcome.
+
+**Next up** (highest leverage, roughly in order): `monitoring/sentry`, `dashboard/scaffold`, `data-layer/switch-to-neon-postgres`, `motion/setup`, `editor/tiptap`, `billing/stripe`. Beyond these, build by demand.
 
 ### Auth
 
@@ -118,6 +121,18 @@ Each recipe overlays `src/lib/log.ts` (and adds siblings under `src/lib/monitori
 | Recipe | Planned scope | Templates |
 | --- | --- | --- |
 | `editor/tiptap` | TipTap (`@tiptap/core` + `@tiptap/pm`) wired into a typed Zod-validated form field. The canonical React rich-text editor for 2026; HoopsLoop already uses it. | `cf-fullstack` |
+
+### Motion / animation
+
+| Recipe | Planned scope | Templates |
+| --- | --- | --- |
+| `motion/setup` | `motion` (formerly Framer Motion) wired with a minimal animated example so the canonical import (`from 'motion/react'`) is visible to agents and humans copying the pattern. | `cf-fullstack` |
+
+### Dashboard
+
+| Recipe | Planned scope | Templates |
+| --- | --- | --- |
+| `dashboard/scaffold` | `npx shadcn@latest add dashboard-01` adapted to use `MyRouterContext` and the template's auth abstraction. | `cf-fullstack` |
 
 ### Billing
 
