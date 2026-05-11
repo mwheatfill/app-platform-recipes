@@ -13,7 +13,7 @@ Use this recipe when Cloudflare Access (with your identity provider behind it) i
 | Path | Purpose |
 | --- | --- |
 | `src/lib/auth/cloudflare-access-provider.ts` | JWT validation via `jose` against the team's JWKS endpoint. Maps claims to the canonical `User` shape. |
-| `src/lib/auth/get-current-user.ts` | **Replaces the template's null-returning stub.** Routes requests through the provider, with an env-driven dev-mode bypass for local work without Access in front. |
+| `src/lib/auth/get-current-user.ts` | Routes requests through the provider, with an env-driven dev-mode bypass for local work without Access in front. |
 | `src/env-cloudflare-access.d.ts` | Augments `Cloudflare.Env` with `TEAM_DOMAIN`, `POLICY_AUD`, `DEV_AUTH_BYPASS_USER`. |
 
 The recipe adds `jose` as a dependency (Cloudflare's canonical JWT library for Workers; works against the Web Crypto API natively).
@@ -57,7 +57,7 @@ The provider reads `payload.groups` as a `string[]`. Whether the JWT contains a 
 - **Entra OIDC**: configure a group claim in the Entra app registration, then in Cloudflare Access map it to a `groups` claim on the JWT.
 - **Other IdPs**: similar mapping at the IdP side, then surface via Access.
 
-If your setup uses a different claim name (e.g. `cf-access-groups`, `custom:groups`), edit `src/lib/auth/cloudflare-access-provider.ts` to read the right key. A future `entra/group-claim-extraction` recipe will codify the Entra-specific path.
+If your setup uses a different claim name (e.g. `cf-access-groups`, `custom:groups`), edit `src/lib/auth/cloudflare-access-provider.ts` to read the right key.
 
 ## What this recipe does NOT handle
 
