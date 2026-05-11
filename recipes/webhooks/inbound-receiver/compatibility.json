@@ -1,0 +1,6 @@
+{
+  "templates": ["cf-fullstack"],
+  "minTemplateVersion": "0.1.0",
+  "implements": "webhook-receiver",
+  "requires": ["webhooks/hmac-validation"]
+}

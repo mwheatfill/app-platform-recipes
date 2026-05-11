@@ -81,6 +81,13 @@ These have actual recipe directories and can be installed today. The "Planned" s
 | `background/queue-consumer` | Cloudflare Queues producer + consumer. `consumeQueueBatch(batch, env, ctx, processOne)` iterates with per-message ack/retry; `sendToQueue` / `sendBatchToQueue` typed producers. DLQ documented. | `cf-fullstack` |
 | `background/workflow` | `WorkflowEntrypoint` example class with `step.do` + `step.sleep` + `retries` config. Pattern for triggering via `env.MY_WORKFLOW.create({ params })`. | `cf-fullstack` |
 
+### Webhooks
+
+| Recipe | What it adds | Templates |
+| --- | --- | --- |
+| `webhooks/hmac-validation` | `verifyHmacSignature({ payload, signature, secret, prefix? })` using `crypto.subtle.verify` (timing-safe). Supports the GitHub/Stripe/generic hex-with-prefix shape. | `cf-fullstack` |
+| `webhooks/inbound-receiver` | `handleInboundWebhook(source, opts)` composes HMAC validation + optional R2 archive + optional queue dispatch. `requires: webhooks/hmac-validation`. | `cf-fullstack` |
+
 ### Microsoft Copilot (Azure templates)
 
 | Recipe | What it adds | Templates |
@@ -175,8 +182,6 @@ Each recipe overlays `src/lib/log.ts` (and adds siblings under `src/lib/monitori
 | `data-layer/switch-to-neon-postgres` | Convert from D1 to Neon Postgres + Cloudflare Hyperdrive. | `cf-fullstack` |
 | `drizzle/d1-migration` | Pattern for adding a new table or evolving schema. | `cf-fullstack` |
 | `entra/group-claim-extraction` | Read groups from a JWT, map to app roles. | `cf-fullstack`, `az-fullstack`, `az-spa` |
-| `webhooks/hmac-validation` | Incoming webhook signature verification. | `cf-fullstack` |
-| `webhooks/inbound-receiver` | Worker → Queue → consumer → R2 archive. | `cf-fullstack` |
 | `teams/adaptive-card-alert` | Post structured cards to Teams Incoming Webhook. | `cf-fullstack`, `az-fullstack`, `az-spa` |
 | `teams/presence` | Get presence and subscribe to changes via Graph. | `cf-fullstack`, `az-fullstack`, `az-spa` |
 | `pagerduty/event-create` | Fire a v2 PagerDuty event. | `cf-fullstack`, `az-fullstack` |
