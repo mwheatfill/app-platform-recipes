@@ -94,6 +94,12 @@ These have actual recipe directories and can be installed today. The "Planned" s
 | --- | --- | --- |
 | `storage/r2-archive` | `composeArchiveKey`, `putArchive`, `getArchiveText`, `listArchive`, `iterateArchive` over R2. Date-prefixed key shape interops with `webhooks/inbound-receiver`. | `cf-fullstack` |
 
+### Coordination
+
+| Recipe | What it adds | Templates |
+| --- | --- | --- |
+| `coordination/durable-object-lock` | `LockDurableObject` (SQLite-backed DO) + `withLock` / `tryAcquireLock` helpers for per-key mutual exclusion. TTL-based safety net, atomic acquire via DO single-threading, discriminated-union `status` for strict-tsconfig narrowing. | `cf-fullstack` |
+
 ### Microsoft Copilot (Azure templates)
 
 | Recipe | What it adds | Templates |
