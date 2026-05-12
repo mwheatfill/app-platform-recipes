@@ -85,8 +85,14 @@ These have actual recipe directories and can be installed today. The "Planned" s
 
 | Recipe | What it adds | Templates |
 | --- | --- | --- |
-| `webhooks/hmac-validation` | `verifyHmacSignature({ payload, signature, secret, prefix? })` using `crypto.subtle.verify` (timing-safe). Supports the GitHub/Stripe/generic hex-with-prefix shape. | `cf-fullstack` |
-| `webhooks/inbound-receiver` | `handleInboundWebhook(source, opts)` composes HMAC validation + optional R2 archive + optional queue dispatch. `requires: webhooks/hmac-validation`. | `cf-fullstack` |
+| `webhooks/hmac-validation` | `verifyHmacSignature({ payload, signature, secret, algorithm?, prefix? })` using `crypto.subtle.verify` (timing-safe). Multi-algorithm (SHA-256/384/512), multi-signature (rotation), prefix-aware (GitHub/Stripe/generic). | `cf-fullstack` |
+| `webhooks/inbound-receiver` | `handleInboundWebhook(source, opts)` composes HMAC validation + optional replay window + optional KV idempotency + optional R2 archive + optional queue dispatch. `requires: webhooks/hmac-validation`. | `cf-fullstack` |
+
+### Storage
+
+| Recipe | What it adds | Templates |
+| --- | --- | --- |
+| `storage/r2-archive` | `composeArchiveKey`, `putArchive`, `getArchiveText`, `listArchive`, `iterateArchive` over R2. Date-prefixed key shape interops with `webhooks/inbound-receiver`. | `cf-fullstack` |
 
 ### Microsoft Copilot (Azure templates)
 
