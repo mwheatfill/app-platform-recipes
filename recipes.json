@@ -1,0 +1,366 @@
+{
+  "version": 1,
+  "recipes": [
+    {
+      "id": "ai/chat-route",
+      "domain": "ai",
+      "name": "chat-route",
+      "description": "Auth-protected streaming chat endpoint for the cf-fullstack template. Includes the Content-Encoding: identity Workers SSE fix in the handler.",
+      "templates": [
+        "cf-fullstack"
+      ],
+      "implements": "ai-chat-endpoint",
+      "requires": [],
+      "dependsOn": [
+        "auth-provider",
+        "ai-provider"
+      ],
+      "providesEnvVars": [],
+      "hasInstallScript": true
+    },
+    {
+      "id": "ai/chat-ui",
+      "domain": "ai",
+      "name": "chat-ui",
+      "description": "Removable example chat surface using @ai-sdk/react's useChat. Pairs with ai/chat-route. Replace with Vercel AI Elements components when you want richer chat primitives.",
+      "templates": [
+        "cf-fullstack"
+      ],
+      "implements": "ai-chat-surface",
+      "requires": [],
+      "dependsOn": [
+        "ai-chat-endpoint"
+      ],
+      "providesEnvVars": [],
+      "hasInstallScript": true
+    },
+    {
+      "id": "ai/cmdk-prompt",
+      "domain": "ai",
+      "name": "cmdk-prompt",
+      "description": "Adds an in-app Cmd+K natural-language prompt to the SPA, backed by Azure OpenAI (or Anthropic) tool calling. The prompt **shares its brain** — instructions and tool definitions — with the `+copilot-agent` recipe, so a question typed in the SPA gets the same treatment as the same question asked of the Copilot agent.",
+      "templates": [
+        "az-spa"
+      ],
+      "requires": [],
+      "dependsOn": [],
+      "providesEnvVars": [],
+      "hasInstallScript": true
+    },
+    {
+      "id": "auth/better-auth",
+      "domain": "auth",
+      "name": "better-auth",
+      "description": "Wires Better Auth as the auth provider for the cf-fullstack template. Multi-provider env-driven setup: email + password, email-OTP, social OAuth, and Microsoft Entra OIDC all wired; each activates when its env vars are present.",
+      "templates": [
+        "cf-fullstack"
+      ],
+      "implements": "auth-provider",
+      "requires": [],
+      "dependsOn": [],
+      "providesEnvVars": [
+        "BETTER_AUTH_SECRET",
+        "BETTER_AUTH_URL",
+        "GOOGLE_CLIENT_ID",
+        "GOOGLE_CLIENT_SECRET",
+        "GITHUB_CLIENT_ID",
+        "GITHUB_CLIENT_SECRET",
+        "APPLE_CLIENT_ID",
+        "APPLE_CLIENT_SECRET",
+        "MICROSOFT_CLIENT_ID",
+        "MICROSOFT_CLIENT_SECRET",
+        "MICROSOFT_TENANT_ID"
+      ],
+      "hasInstallScript": true
+    },
+    {
+      "id": "auth/cloudflare-access",
+      "domain": "auth",
+      "name": "cloudflare-access",
+      "description": "Cloudflare Access as the auth provider for `template-cf-fullstack`. Implements the template's `getCurrentUser(request)` abstraction ([ADR-005](https://github.com/mwheatfill/template-cf-fullstack/blob/main/docs/adr/005-auth-provider-abstraction.md)) by validating the `Cf-Access-Jwt-Assertion` header that Access adds to every request.",
+      "templates": [
+        "cf-fullstack"
+      ],
+      "implements": "auth-provider",
+      "requires": [],
+      "dependsOn": [],
+      "providesEnvVars": [
+        "TEAM_DOMAIN",
+        "POLICY_AUD",
+        "DEV_AUTH_BYPASS_USER"
+      ],
+      "hasInstallScript": true
+    },
+    {
+      "id": "auth/swa-auth-ux",
+      "domain": "auth",
+      "name": "swa-auth-ux",
+      "description": "Use this for Azure Static Web Apps React SPAs that should feel like polished internal products while still relying on SWA EasyAuth and Microsoft Entra ID.",
+      "templates": [
+        "az-spa"
+      ],
+      "requires": [],
+      "dependsOn": [],
+      "providesEnvVars": [],
+      "hasInstallScript": false,
+      "notes": "Guidance recipe for older SWA React apps. Current template-az-spa already includes this pattern."
+    },
+    {
+      "id": "background/cron-trigger",
+      "domain": "background",
+      "name": "cron-trigger",
+      "description": "Wires a Cloudflare Cron Trigger into `template-cf-fullstack`. Adds a `scheduled()` handler to the Worker and the `triggers.crons` config to `wrangler.jsonc`.",
+      "templates": [
+        "cf-fullstack"
+      ],
+      "implements": "background-cron",
+      "requires": [],
+      "dependsOn": [],
+      "providesEnvVars": [],
+      "hasInstallScript": true
+    },
+    {
+      "id": "background/queue-consumer",
+      "domain": "background",
+      "name": "queue-consumer",
+      "description": "Wires a Cloudflare Queue producer + consumer pair into `template-cf-fullstack`. App code sends via `sendToQueue(env.MY_QUEUE, body)`; the Worker consumes batches via a `queue()` handler that ack/retries per message.",
+      "templates": [
+        "cf-fullstack"
+      ],
+      "implements": "background-queue",
+      "requires": [],
+      "dependsOn": [],
+      "providesEnvVars": [],
+      "hasInstallScript": true
+    },
+    {
+      "id": "background/workflow",
+      "domain": "background",
+      "name": "workflow",
+      "description": "Wires a Cloudflare Workflow (durable multi-step execution) into `template-cf-fullstack`. Adds a `WorkflowEntrypoint` class example, the wrangler binding shape, and the call-site pattern for kicking off instances.",
+      "templates": [
+        "cf-fullstack"
+      ],
+      "implements": "background-workflow",
+      "requires": [],
+      "dependsOn": [],
+      "providesEnvVars": [],
+      "hasInstallScript": true
+    },
+    {
+      "id": "charts/setup",
+      "domain": "charts",
+      "name": "setup",
+      "description": "Adds shadcn Chart (Recharts v3 wrapper) and an example /charts route showing area + bar with tooltip.",
+      "templates": [
+        "cf-fullstack"
+      ],
+      "requires": [],
+      "dependsOn": [],
+      "providesEnvVars": [],
+      "hasInstallScript": true
+    },
+    {
+      "id": "coordination/durable-object-lock",
+      "domain": "coordination",
+      "name": "durable-object-lock",
+      "description": "Per-key mutual exclusion via a single-keyed Durable Object. Use when multiple Worker isolates may race to execute the same logical task and exactly one should win: scheduled-job evaluator dispatching the same schedule, deduplicating concurrent webhook-fanouts, single-leader sweeps.",
+      "templates": [
+        "cf-fullstack"
+      ],
+      "implements": "coordination-lock",
+      "requires": [],
+      "dependsOn": [],
+      "providesEnvVars": [],
+      "hasInstallScript": true
+    },
+    {
+      "id": "data/durable-snapshot-cache",
+      "domain": "data",
+      "name": "durable-snapshot-cache",
+      "description": "Use this when upstream calls are slow, flaky, expensive, rate-limited, or too slow for Copilot and plugin user paths. The refresh path does the slow work; user-path reads project durable snapshots.",
+      "templates": [
+        "az-spa",
+        "az-fullstack"
+      ],
+      "requires": [],
+      "dependsOn": [],
+      "providesEnvVars": [],
+      "hasInstallScript": false,
+      "notes": "Guidance recipe. Snapshot schema and upstream refresh code are app-specific."
+    },
+    {
+      "id": "email/graph-shared-mailbox",
+      "domain": "email",
+      "name": "graph-shared-mailbox",
+      "description": "Adds Microsoft Graph `Mail.Send` from a shared mailbox + React Email templates. Sends branded HTML emails (Outlook-compatible) using the same Graph client the app already uses for presence / directory lookup.",
+      "templates": [
+        "az-spa",
+        "az-fullstack"
+      ],
+      "requires": [],
+      "dependsOn": [],
+      "providesEnvVars": [],
+      "hasInstallScript": true
+    },
+    {
+      "id": "email/send-pipeline",
+      "domain": "email",
+      "name": "send-pipeline",
+      "description": "sendEmail(input) dispatcher with React Email render layer. Transport-pluggable; throws clear install-the-X-recipe errors until a transport is installed.",
+      "templates": [
+        "cf-fullstack"
+      ],
+      "implements": "email-pipeline",
+      "requires": [],
+      "dependsOn": [],
+      "providesEnvVars": [
+        "EMAIL_TRANSPORT"
+      ],
+      "hasInstallScript": true
+    },
+    {
+      "id": "email/welcome-template",
+      "domain": "email",
+      "name": "welcome-template",
+      "description": "Example React Email template demonstrating the pattern. Copy and modify, or use as a reference for your own templates.",
+      "templates": [
+        "cf-fullstack"
+      ],
+      "implements": "email-template",
+      "requires": [],
+      "dependsOn": [
+        "email-pipeline"
+      ],
+      "providesEnvVars": [],
+      "hasInstallScript": true
+    },
+    {
+      "id": "mcp/expose-app-as-mcp-server",
+      "domain": "mcp",
+      "name": "expose-app-as-mcp-server",
+      "description": "Adds a Model Context Protocol server that exposes the app's REST API as agent tools. After install, MCP-aware clients (Claude Desktop, Cursor, ChatGPT desktop, custom agent runtimes) can call any endpoint in your `/api/openapi.json` spec via natural language.",
+      "templates": [
+        "az-spa",
+        "az-fullstack"
+      ],
+      "requires": [],
+      "dependsOn": [],
+      "providesEnvVars": [],
+      "hasInstallScript": true
+    },
+    {
+      "id": "microsoft-copilot/declarative-agent",
+      "domain": "microsoft-copilot",
+      "name": "declarative-agent",
+      "description": "Adds a Microsoft 365 Copilot declarative agent, API plugin manifest, curated OpenAPI action contract, and one conservative Adaptive Card template.",
+      "templates": [
+        "az-spa",
+        "az-fullstack"
+      ],
+      "requires": [],
+      "dependsOn": [],
+      "providesEnvVars": [],
+      "hasInstallScript": true
+    },
+    {
+      "id": "microsoft-foundry/chat-completion",
+      "domain": "microsoft-foundry",
+      "name": "chat-completion",
+      "description": "Default AI provider for the cf-fullstack template. Cloudflare AI Gateway → Microsoft Foundry. Provider-agnostic AI SDK code; swap is a config change.",
+      "templates": [
+        "cf-fullstack"
+      ],
+      "implements": "ai-provider",
+      "requires": [],
+      "dependsOn": [],
+      "providesEnvVars": [
+        "AI_PROVIDER",
+        "FOUNDRY_AI_GATEWAY_URL",
+        "FOUNDRY_API_KEY",
+        "FOUNDRY_API_VERSION",
+        "FOUNDRY_DEPLOYMENT"
+      ],
+      "hasInstallScript": true
+    },
+    {
+      "id": "monitoring/sentry",
+      "domain": "monitoring",
+      "name": "sentry",
+      "description": "Wires Sentry error + performance monitoring for `template-cf-fullstack`. Worker side via `@sentry/cloudflare`, browser side via `@sentry/react`, source-map upload via `@sentry/vite-plugin` at build time.",
+      "templates": [
+        "cf-fullstack"
+      ],
+      "implements": "monitoring",
+      "requires": [],
+      "dependsOn": [],
+      "providesEnvVars": [
+        "SENTRY_DSN",
+        "SENTRY_RELEASE",
+        "VITE_SENTRY_DSN",
+        "VITE_PUBLIC_ENV"
+      ],
+      "hasInstallScript": true
+    },
+    {
+      "id": "presentation/card-ready-responses",
+      "domain": "presentation",
+      "name": "card-ready-responses",
+      "description": "Use this when the same API response should support React cards, Microsoft 365 Copilot Adaptive Card citations, or other host-rendered summaries.",
+      "templates": [
+        "az-spa",
+        "az-fullstack",
+        "cf-fullstack"
+      ],
+      "requires": [],
+      "dependsOn": [],
+      "providesEnvVars": [],
+      "hasInstallScript": false,
+      "notes": "Guidance recipe. Apply to the endpoint/schema that needs card-ready projection."
+    },
+    {
+      "id": "storage/r2-archive",
+      "domain": "storage",
+      "name": "r2-archive",
+      "description": "Typed helpers over Cloudflare R2 for the \"write a blob, read it back, optionally list\" pattern: webhook raw bodies, response bodies from outbound HTTP, archived run history, any opaque payload that's too big for D1 or KV.",
+      "templates": [
+        "cf-fullstack"
+      ],
+      "implements": "storage-archive",
+      "requires": [],
+      "dependsOn": [],
+      "providesEnvVars": [],
+      "hasInstallScript": true
+    },
+    {
+      "id": "webhooks/hmac-validation",
+      "domain": "webhooks",
+      "name": "hmac-validation",
+      "description": "HMAC signature verification for inbound webhooks. Single helper, no dependencies, uses Workers' Web Crypto API. Supports SHA-256 / SHA-384 / SHA-512, single or rotating signatures, and an optional prefix strip. The pair recipe [`webhooks/inbound-receiver`](../inbound-receiver) builds on top of this for the full \"receive → validate → enqueue → archive\" pattern.",
+      "templates": [
+        "cf-fullstack"
+      ],
+      "implements": "webhook-validator",
+      "requires": [],
+      "dependsOn": [],
+      "providesEnvVars": [],
+      "hasInstallScript": true
+    },
+    {
+      "id": "webhooks/inbound-receiver",
+      "domain": "webhooks",
+      "name": "inbound-receiver",
+      "description": "Full inbound webhook receiver pattern: HMAC validation, optional replay-window check, optional KV-backed idempotency dedup, optional durable archive to R2, optional async dispatch via Cloudflare Queues. Composes with [`webhooks/hmac-validation`](../hmac-validation) (required), [`background/queue-consumer`](../../background/queue-consumer) (optional), and any R2 bucket binding for raw-body retention.",
+      "templates": [
+        "cf-fullstack"
+      ],
+      "implements": "webhook-receiver",
+      "requires": [
+        "webhooks/hmac-validation"
+      ],
+      "dependsOn": [],
+      "providesEnvVars": [],
+      "hasInstallScript": true
+    }
+  ]
+}

@@ -4,7 +4,9 @@
   "version": "0.1.0",
   "type": "module",
   "scripts": {
-    "test": "node scripts/check-recipes.mjs"
+    "manifest:build": "node scripts/build-manifest.mjs",
+    "manifest:check": "node scripts/build-manifest.mjs check",
+    "test": "node scripts/check-recipes.mjs && node scripts/build-manifest.mjs check"
   },
   "engines": {
     "node": ">=22.0.0"
