@@ -1,5 +1,5 @@
 import * as Sentry from '@sentry/cloudflare'
-import handler, { createServerEntry } from '@tanstack/react-start/server-entry'
+import handler from '@tanstack/react-start/server-entry'
 
 const STATIC_OPTS = {
   sendDefaultPii: true,
@@ -7,8 +7,7 @@ const STATIC_OPTS = {
   tracesSampleRate: 1.0,
 } as const
 
-// `env` arrives via the withSentry closure (Sentry SDK contract); other
-// recipes read it via `import { env } from 'cloudflare:workers'`.
+// Plain ExportedHandler shape, not createServerEntry: TanStack's RequestHandler signature is not assignable to withSentry's ExportedHandler<Env> slot.
 export default Sentry.withSentry(
   (env: Cloudflare.Env) => ({
     ...STATIC_OPTS,
@@ -16,9 +15,9 @@ export default Sentry.withSentry(
     environment: env.PUBLIC_ENV ?? 'unknown',
     ...(env.SENTRY_RELEASE !== undefined ? { release: env.SENTRY_RELEASE } : {}),
   }),
-  createServerEntry({
-    fetch(request) {
+  {
+    fetch(request: Request): Response | Promise<Response> {
       return handler.fetch(request)
     },
-  }),
+  } satisfies ExportedHandler<Cloudflare.Env>,
 )
