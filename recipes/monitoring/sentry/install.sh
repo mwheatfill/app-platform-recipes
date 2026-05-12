@@ -1,6 +1,18 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
+if [[ ! -f pnpm-workspace.yaml ]] || ! grep -q "^allowBuilds:" pnpm-workspace.yaml; then
+  echo "✗ pnpm-workspace.yaml with an 'allowBuilds:' key not found. This recipe expects the template's workspace file."
+  exit 1
+fi
+
+if ! grep -q "'@sentry/cli':" pnpm-workspace.yaml; then
+  echo "▶ Allowing @sentry/cli build scripts in pnpm-workspace.yaml..."
+  awk "/^allowBuilds:/ { print; print \"  '@sentry/cli': true\"; next } { print }" \
+    pnpm-workspace.yaml > pnpm-workspace.yaml.tmp \
+    && mv pnpm-workspace.yaml.tmp pnpm-workspace.yaml
+fi
+
 echo "▶ Installing Sentry SDKs and Vite plugin..."
 pnpm add @sentry/cloudflare @sentry/react
 pnpm add -D @sentry/vite-plugin
